@@ -29,7 +29,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "npm"
+          cache: "yarn"
 
       - uses: dtolnay/rust-toolchain@stable
 
@@ -37,18 +37,59 @@ jobs:
         if: startsWith(matrix.runner, 'ubuntu')
         run: |
           sudo apt-get update
+          # ubuntu-latest may be 24.04+ where WebKitGTK 4.0 packages are not available.
+          sudo apt-get install -y libwebkit2gtk-4.1-dev || sudo apt-get install -y libwebkit2gtk-4.0-dev
           sudo apt-get install -y \
-            libwebkit2gtk-4.0-dev \
             build-essential \
+            pkg-config \
             libssl-dev \
             libgtk-3-dev \
             libayatana-appindicator3-dev \
             librsvg2-dev
 
       - name: Install frontend dependencies
-        run: npm ci
+        run: |
+          corepack enable
+          yarn install --frozen-lockfile
 
-      - uses: tauri-apps/tauri-action@v0
+      - name: Generate Windows icon (.ico)
+        if: startsWith(matrix.runner, 'windows')
+        shell: pwsh
+        run: |
+          $ico = "src-tauri/icons/icon.ico"
+          if (Test-Path $ico) { exit 0 }
+          if (-not (Test-Path "src-tauri/icons/icon.png")) { throw "src-tauri/icons/icon.png not found" }
+          if (-not (Get-Command magick -ErrorAction SilentlyContinue)) {
+            choco install imagemagick -y --no-progress
+          }
+          magick convert src-tauri/icons/icon.png -define icon:auto-resize=256,128,64,48,32,16 $ico
+
+      - name: Generate macOS icon (.icns)
+        if: startsWith(matrix.runner, 'macos')
+        shell: bash
+        run: |
+          ICNS="src-tauri/icons/icon.icns"
+          if [ -f "$ICNS" ]; then exit 0; fi
+          PNG="src-tauri/icons/icon.png"
+          test -f "$PNG"
+          ICONSET="src-tauri/icons/icon.iconset"
+          rm -rf "$ICONSET"
+          mkdir -p "$ICONSET"
+          sips -z 16 16     "$PNG" --out "$ICONSET/icon_16x16.png"
+          sips -z 32 32     "$PNG" --out "$ICONSET/icon_16x16@2x.png"
+          sips -z 32 32     "$PNG" --out "$ICONSET/icon_32x32.png"
+          sips -z 64 64     "$PNG" --out "$ICONSET/icon_32x32@2x.png"
+          sips -z 128 128   "$PNG" --out "$ICONSET/icon_128x128.png"
+          sips -z 256 256   "$PNG" --out "$ICONSET/icon_128x128@2x.png"
+          sips -z 256 256   "$PNG" --out "$ICONSET/icon_256x256.png"
+          sips -z 512 512   "$PNG" --out "$ICONSET/icon_256x256@2x.png"
+          sips -z 512 512   "$PNG" --out "$ICONSET/icon_512x512.png"
+          sips -z 1024 1024 "$PNG" --out "$ICONSET/icon_512x512@2x.png"
+          iconutil -c icns "$ICONSET" -o "$ICNS"
+
+      - name: Build (no release)
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NO_STRIP: "true"
@@ -56,3 +97,17 @@ jobs:
         with:
           args: ${{ matrix.args }}
 
+      - name: Build and publish GitHub Release
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NO_STRIP: "true"
+          RUST_BACKTRACE: "1"
+          CARGO_PROFILE_RELEASE_BUILD_OVERRIDE_DEBUG: "true"
+        with:
+          args: ${{ matrix.args }}
+          tagName: ${{ github.ref_name }}
+          releaseName: ${{ github.ref_name }}
+          releaseDraft: false
+          prerelease: false

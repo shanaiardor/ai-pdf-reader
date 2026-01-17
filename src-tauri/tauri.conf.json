@@ -36,7 +36,9 @@
       "active": true,
       "identifier": "com.example.pdf-box-explorer",
       "icon": [
-        "icons/icon.png"
+        "icons/icon.png",
+        "icons/icon.ico",
+        "icons/icon.icns"
       ]
     }
   }
