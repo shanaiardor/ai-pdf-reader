@@ -1,0 +1,253 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --app-ink: #1f1e1b;
+  --app-bg:
+    radial-gradient(circle at top left, #f5f2ea, transparent 55%),
+    radial-gradient(circle at 20% 10%, rgba(255, 202, 130, 0.4), transparent 50%),
+    linear-gradient(120deg, #e7edf3, #f8f7f3 70%);
+  --app-surface: rgba(255, 255, 255, 0.7);
+  --app-surface-strong: rgba(255, 255, 255, 0.9);
+  --app-border: rgba(0, 0, 0, 0.1);
+}
+
+:root[data-theme="sepia"] {
+  --app-ink: #1f1e1b;
+  --app-bg:
+    radial-gradient(circle at top left, #f6f1e6, transparent 55%),
+    radial-gradient(circle at 20% 10%, rgba(255, 202, 130, 0.35), transparent 50%),
+    linear-gradient(120deg, #e9e3d8, #fbf8f1 70%);
+  --app-surface: rgba(255, 255, 255, 0.65);
+  --app-surface-strong: rgba(255, 255, 255, 0.88);
+  --app-border: rgba(0, 0, 0, 0.12);
+}
+
+:root[data-theme="dark"] {
+  --app-ink: #f3f2ee;
+  --app-bg:
+    radial-gradient(circle at top left, rgba(255, 122, 26, 0.18), transparent 55%),
+    radial-gradient(circle at 20% 10%, rgba(80, 170, 255, 0.12), transparent 50%),
+    linear-gradient(120deg, #0b1016, #121820 70%);
+  --app-surface: rgba(15, 20, 30, 0.6);
+  --app-surface-strong: rgba(15, 20, 30, 0.82);
+  --app-border: rgba(255, 255, 255, 0.14);
+}
+
+@layer base {
+  body {
+    font-family: "Space Grotesk", "Segoe UI", sans-serif;
+    color: var(--app-ink);
+    background: var(--app-bg);
+  }
+
+  button:disabled,
+  input:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgba(255, 122, 26, 0.55);
+    outline-offset: 2px;
+  }
+
+  /* Nicer scrollbars (right panel / any overflow containers) */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.22) transparent;
+  }
+
+  :root[data-theme="dark"] * {
+    scrollbar-color: rgba(255, 255, 255, 0.24) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.18);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+
+  :root[data-theme="dark"] *::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.22);
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+
+  :root[data-theme="dark"] *::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.34);
+  }
+}
+
+@layer components {
+  #app-header.header-compact #header-brand {
+    display: none;
+  }
+
+  .surface {
+    background: var(--app-surface-strong);
+    border: 1px solid var(--app-border);
+  }
+
+  .surface-soft {
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+  }
+
+  .page {
+    @apply relative mx-auto mb-7 rounded-3xl p-4 shadow-card opacity-0;
+    background: var(--app-surface-strong);
+    animation: riseIn 0.6s ease forwards;
+  }
+
+  .overlay {
+    @apply absolute inset-4 pointer-events-none;
+  }
+
+  .box {
+    @apply absolute cursor-pointer rounded-md border border-black/10 bg-black/5 transition duration-150;
+    pointer-events: auto;
+  }
+
+  .box:hover {
+    @apply bg-black/10 -translate-y-0.5;
+  }
+
+  .box.is-active {
+    @apply bg-black/15 border-black/30 ring-2 ring-black/20;
+  }
+
+  .box.is-search {
+    @apply bg-accent/20 border-accent/50;
+  }
+
+  .box.is-search-active {
+    @apply bg-accent/30 border-accent ring-2 ring-accent/40;
+  }
+
+  .boxes-hidden .box,
+  .boxes-hidden .box.is-active,
+  .boxes-hidden .box.is-search,
+  .boxes-hidden .box.is-search-active {
+    opacity: 0;
+    border-color: transparent;
+    background-color: transparent;
+    box-shadow: none;
+  }
+
+  .boxes-hidden .box:hover {
+    transform: none;
+  }
+
+  .selection-rect {
+    @apply fixed z-50 border-2 border-black/40 bg-black/10;
+    pointer-events: none;
+  }
+
+  .markdown {
+    @apply leading-relaxed;
+  }
+
+  .markdown h1,
+  .markdown h2,
+  .markdown h3 {
+    @apply font-fraunces mt-4 mb-2 text-neutral-800;
+  }
+
+  .markdown p {
+    @apply my-2;
+  }
+
+  .markdown a {
+    @apply text-accent underline underline-offset-2;
+  }
+
+  .markdown ul {
+    @apply my-2 list-disc pl-5;
+  }
+
+  .markdown ol {
+    @apply my-2 list-decimal pl-5;
+  }
+
+  .markdown code {
+    @apply rounded-md bg-black/5 px-1 py-0.5 font-mono text-[0.95em];
+  }
+
+  .markdown pre {
+    @apply my-3 overflow-x-auto rounded-2xl bg-black/5 p-3;
+  }
+
+  .markdown pre code {
+    @apply bg-transparent p-0;
+  }
+
+  .markdown blockquote {
+    @apply my-3 border-l-2 border-black/10 pl-3 text-neutral-600;
+  }
+
+  .markdown hr {
+    @apply my-4 border-black/10;
+  }
+
+  .scroll-area {
+    scrollbar-gutter: stable;
+  }
+
+  .collapsible {
+    max-height: 280px;
+    opacity: 1;
+    transition: max-height 260ms ease, opacity 220ms ease, padding 220ms ease,
+      margin 220ms ease;
+    overflow: hidden;
+  }
+
+  .collapsible.is-collapsed {
+    max-height: 0;
+    opacity: 0;
+    padding: 0;
+    margin: 0;
+    border-width: 0;
+  }
+
+  .scroll-area > .collapsible.is-collapsed + * {
+    margin-top: 0 !important;
+  }
+}
+
+@layer utilities {
+  .font-fraunces {
+    font-family: "Fraunces", "Times New Roman", serif;
+  }
+}
+
+@keyframes riseIn {
+  from {
+    transform: translateY(18px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page {
+    animation: none;
+    opacity: 1;
+  }
+}

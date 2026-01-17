@@ -1,0 +1,43 @@
+{
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devPath": "http://localhost:5173",
+    "distDir": "../dist"
+  },
+  "package": {
+    "productName": "PDF Box Explorer",
+    "version": "0.1.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "dialog": {
+        "open": true
+      },
+      "fs": {
+        "readFile": true,
+        "scope": [
+          "**"
+        ]
+      }
+    },
+    "windows": [
+      {
+        "title": "PDF Box Explorer",
+        "width": 1200,
+        "height": 800,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "csp": null
+    },
+    "bundle": {
+      "active": true,
+      "identifier": "com.example.pdf-box-explorer",
+      "icon": [
+        "icons/icon.png"
+      ]
+    }
+  }
+}
